@@ -9,7 +9,7 @@ It is an event-driven, serverless compute platform, which provides automatic sca
 It is a NoSQL serverless document database that simplifies storing, syncing, and querying data for mobile, web and IoT apps at global scale. 
 
 
-
+![Architecture](architecture.svg)
 ## Steps:
 As seen in the Architecture diagram, the pipeline consists of following steps:
 
