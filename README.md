@@ -33,6 +33,17 @@ As seen in the Architecture diagram, the pipeline consists of following steps:
 6. Test the streaming pipeline
 7. Configure Cloud Monitoring to alert on any unexpected behaviors
 
+## Implementation steps:
+1. Before you begin:
+- Create a project: `gcloud projects create PROJECT_ID --organization=ORGANIZATION_ID --folder=FOLDER_ID`
+- Enable billing, check status: `gcloud beta describe PROJECT_ID`
+- Enable Cloud Functions and Cloud Build APIs
+2. Setting up the environment:
+- In the Cloud Shell, make sure you set the project to the correct one, using `gcloud config set project PROJECT_ID`
+- Set the default compute zone, using `REGION=us-east-1`
+3. Creating streaming source and destination sinks
+- Create source Cloud Storage bucket with a timestamp, using `gsutil mb -c regional -l ${REGION} gs://{DEVSHELL_PROJECT_ID}-files-source-json-$(date +%s)` 
+- Create BigQuery dataset using `bq mk dataset_files_sink_json` table using the schema in `schema.json` file with command `bq mk dataset_files_sink_json.table_sink schema.json`
 
 ## Useful links:
 - Original project: https://cloud.google.com/architecture/streaming-data-from-cloud-storage-into-bigquery-using-cloud-functions
