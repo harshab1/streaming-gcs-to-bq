@@ -7,11 +7,11 @@
 '''
 
 import logging
-from datetime import datetime
-import pytz
 import json
 import os
 import traceback
+from datetime import datetime
+import pytz
 
 from google.cloud import firestore
 from google.cloud import storage
@@ -19,16 +19,15 @@ from google.cloud import bigquery
 from google.api_core import retry
 from google.cloud import pubsub_v1
 
-
-PROJECT_ID = os.getenv('GCP_PROJECT')
-BQ_DATASET = 'mydataset'
-BQ_TABLE = 'mytable'
 DB = firestore.Client()
 CS = storage.Client()
 BQ = bigquery.Client()
-PS = pubsub_v1.Client()
-ERROR_TOPIC = '/projects/%s/topics/%s' % (PROJECT_ID, 'streaming_error_topic')
-SUCCESS_TOPIC = '/projects/%s/topics/%s' % (PROJECT_ID, 'streaming_success_topic')
+BQ_DATASET = 'dataset_files_sink_json'
+BQ_TABLE = 'table_sink'
+PS = pubsub_v1.PublisherClient()
+PROJECT_ID = os.getenv('GCP_PROJECT')
+SUCCESS_TOPIC = 'projects/%s/topics/%s' % (PROJECT_ID, 'streaming_success_topic')
+ERROR_TOPIC = 'projects/%s/topics/%s' % (PROJECT_ID, 'streaming_error_topic')
 
 
 def streaming(data, context):
