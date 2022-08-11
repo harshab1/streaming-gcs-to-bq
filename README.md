@@ -12,7 +12,6 @@ It is a NoSQL serverless document database that simplifies storing, syncing, and
 ![Architecture](architecture.svg)
 ## Steps:
 As seen in the Architecture diagram, the pipeline consists of following steps:
-
 1. JSON files are uploaded to the `FILES_SOURCE` Cloud Storage Bucket 
 2. This event triggers the `streaming` Cloud Function
 3. Data is parsed and inserted into BigQuery
@@ -34,16 +33,28 @@ As seen in the Architecture diagram, the pipeline consists of following steps:
 7. Configure Cloud Monitoring to alert on any unexpected behaviors
 
 ## Implementation steps:
-1. Before you begin:
+1. Project setup:
 - Create a project: `gcloud projects create PROJECT_ID --organization=ORGANIZATION_ID --folder=FOLDER_ID`
 - Enable billing, check status: `gcloud beta describe PROJECT_ID`
 - Enable Cloud Functions and Cloud Build APIs
 2. Setting up the environment:
-- In the Cloud Shell, make sure you set the project to the correct one, using `gcloud config set project PROJECT_ID`
+- In the Cloud Shell, make sure project is set to the correct one, using `gcloud config set project PROJECT_ID`
 - Set the default compute zone, using `REGION=us-east-1`
-3. Creating streaming source and destination sinks
-- Create source Cloud Storage bucket with a timestamp, using `gsutil mb -c regional -l ${REGION} gs://{DEVSHELL_PROJECT_ID}-files-source-json-$(date +%s)` 
+3. Creating streaming source and destination sinks:
+- Create source Cloud Storage bucket with a timestamp, using `gsutil mb -c regional -l ${REGION} gs://${FILE_SOURCE}` where `FILE_SOURCE=${DEVSHELL_PROJECT_ID}-files-source-json-$(date +%s)`
 - Create BigQuery dataset using `bq mk dataset_files_sink_json` table using the schema in `schema.json` file with command `bq mk dataset_files_sink_json.table_sink schema.json`
+4. Streaming data into Big Query:
+- Setting up the streaming Cloud Function: 
+    * This function listens to new files added to Cloud Storage source bucket and triggers a process that does the following:
+        * Parses and validates the file
+        * Checks for duplications
+        * Inserts the file's content into BigQuery
+        * Logs the ingestion status in Firestore and Logging
+        * Publishes a message to either an error or success topic in Pub/Sub
+    * Creating a Cloud Storage bucket to stage the functions during deployment, using `gsutil mb -c regional -l us-east1 gs://${FUNCTIONS_BUCKET}` where `FUNCTIONS_BUCKET=${DEVSHELL_PROJECT_ID}-functions-$(date +%s)`
+    * Deploy the streaming function, using `gcloud functions deploy streaming --region=${REGION} --source=./cloud-functions/streaming --runtime=python37 --stage-bucket=${FUNCTIONS_BUCKET} --trigger-bucket=${FILES_SOURCE}`
+    * Check whether the function is deployed, using `gcloud functions describe streaming --region=${REGION}`
+
 
 ## Useful links:
 - Original project: https://cloud.google.com/architecture/streaming-data-from-cloud-storage-into-bigquery-using-cloud-functions
