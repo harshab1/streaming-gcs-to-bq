@@ -35,13 +35,13 @@ As seen in the Architecture diagram, the pipeline consists of following steps:
 ## Implementation steps:
 1. Project setup:
 - Create a project: `gcloud projects create PROJECT_ID --organization=ORGANIZATION_ID --folder=FOLDER_ID`
-- Enable billing, check status: `gcloud beta describe PROJECT_ID`
+- Enable billing, check status: `gcloud beta billing projects describe PROJECT_ID`
 - Enable Cloud Functions and Cloud Build APIs
 2. Setting up the environment:
 - In the Cloud Shell, make sure project is set to the correct one, using `gcloud config set project PROJECT_ID`
 - Set the default compute zone, using `REGION=us-east-1`
 3. Creating streaming source and destination sinks:
-- Create source Cloud Storage bucket with a timestamp, using `gsutil mb -c regional -l ${REGION} gs://${FILE_SOURCE}` where `FILE_SOURCE=${DEVSHELL_PROJECT_ID}-files-source-json-$(date +%s)`
+- Create source Cloud Storage bucket with a timestamp, using `gsutil mb -c regional -l ${REGION} gs://${FILE_SOURCE}` where `FILES_SOURCE=${DEVSHELL_PROJECT_ID}-files-source-json-$(date +%s)`
 - Create BigQuery dataset using `bq mk dataset_files_sink_json` table using the schema in `schema.json` file with command `bq mk dataset_files_sink_json.table_sink schema.json`
 4. Streaming data into Big Query:
 - Setting up the streaming Cloud Function: 
@@ -54,7 +54,8 @@ As seen in the Architecture diagram, the pipeline consists of following steps:
     * Creating a Cloud Storage bucket to stage the functions during deployment, using `gsutil mb -c regional -l us-east1 gs://${FUNCTIONS_BUCKET}` where `FUNCTIONS_BUCKET=${DEVSHELL_PROJECT_ID}-functions-$(date +%s)`
     * Deploy the streaming function, using `gcloud functions deploy streaming --region=${REGION} --source=./cloud-functions/streaming --runtime=python37 --stage-bucket=${FUNCTIONS_BUCKET} --trigger-bucket=${FILES_SOURCE}`
     * Check whether the function is deployed, using `gcloud functions describe streaming --region=${REGION}`
-
+- Provision Pub/SUb topics to handle success and error in streaming data using `gcloud pubsub topics create ${STREAMING_SUCCESS_TOPIC}` and `gcloud pubsub topics create ${STREAMING_ERROR_TOPIC}`, where `STREAMING_SUCCESS_TOPIC=streaming_success_topic` and `STREAMING_ERROR_TOPIC=streaming_error_topic` 
+- Setting up the Firestone database
 
 ## Useful links:
 - Original project: https://cloud.google.com/architecture/streaming-data-from-cloud-storage-into-bigquery-using-cloud-functions
